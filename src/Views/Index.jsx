@@ -8,12 +8,16 @@ import PokeTarjeta from '../Components/PokeTarjeta'
 
 const Index = () => {
   const [pokemones, setPokemones] = useState([]);
+  const [Allpokemones, setAllPokemones] = useState([]);
+  const [listado, setListado] = useState([]);
+  const [filtro, setFiltro] = useState('');
   const [offset, setOffset] = useState(0);
   const [limit, setLimit] = useState(20);
 
   // El useEffect debe observar cambios en 'offset' si quieres paginación
   useEffect(() => {
     getPokemones(offset);
+    getAllPokemones();
   }, [offset]); 
 
   const getPokemones = async (o) => {
@@ -24,14 +28,41 @@ const Index = () => {
       const response = await axios.get(liga);
       const respuesta = response.data;
       setPokemones(respuesta.results);
-      // Si quieres ver los datos, míralos aquí:
-      //console.log("Datos recibidos:", respuesta.results);
+      setListado(respuesta.results);
+
     } catch (error) {
       console.log('Error getting Pokemons:', error)
-      // Opcional: Podrías poner un mensaje de alerta para el usuario
-      // alert("No se pudo conectar con el servidor de Pokémon");
     }
   }
+
+  const getAllPokemones = async (o) => {
+    const liga = 'https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0';
+
+    try {   
+      const response = await axios.get(liga);
+      const respuesta = response.data;
+      setAllPokemones(respuesta.results);
+    } catch (error) {
+      console.log('Error getting All Pokemons:', error)
+    }
+  }
+
+  const buscar = async(e)=>{
+    if (e.keyCode==13) {
+      if(filtro.trim() != ''){
+        setListado([]);
+        setTimeout(() => {
+          setListado(Allpokemones.filter(p => p.name.includes(filtro)))
+        }, 100);
+      }
+    } else if(filtro.trim() == '') {
+      setListado([]);
+      setTimeout(() => {
+        setListado(pokemones)
+      }, 100);
+    }
+  }
+
 
   return (
     <Container>
@@ -39,12 +70,12 @@ const Index = () => {
         <Col>
           <InputGroup className='shadow'>
             <InputGroupText><i className='fa-solid fa-search'></i></InputGroupText>
-            <Input placeholder='Buscar Pokemon'></Input>
+            <Input value={filtro} onChange={(e) => {setFiltro(e.target.value)}} onKeyUpCapture={buscar} placeholder='Buscar Pokemon'></Input>
           </InputGroup>
         </Col>
       </Row>
       <Row className='mt-3'>
-        { pokemones.map( (pok, i) =>(
+        { listado.map( (pok, i) =>(
           <PokeTarjeta  poke={pok} key = {i} />
 
         ) ) }

@@ -5,9 +5,10 @@ import { Link } from 'react-router-dom'
 
 const PokeTarjeta = (params) => {
   const [pokemon, setPokemon] = useState({});
-  const [imagen, setImagen] = useState(null);
+  const [imagen, setImagen] = useState(null); // Mantenemos null aquí
   const [cardClass, setCardClass] = useState('d-none');
   const [loadClass, setLoadClass] = useState('d-block');
+  const [fadeClass, setFadeClass] = useState('opacity-0');
 
   useEffect(() => {
     getPokemon()
@@ -20,16 +21,21 @@ const PokeTarjeta = (params) => {
       const respuesta = response.data;
       setPokemon(respuesta);
       setImagen(respuesta.sprites.other['official-artwork'].front_default);
+      
       setCardClass('d-block');
       setLoadClass('d-none');
+      
+      setTimeout(() => {
+        setFadeClass('opacity-100');
+      }, 50);
+
     } catch (error) {
       setLoadClass('d-none');
     }
   }
 
   return (
-
-    <Col sm='4' lg='4' className='mb-4 d-flex align-items-stretch'>
+    <Col sm='4' lg='3' className='mb-4 d-flex align-items-stretch'>
       
       {/* TARJETA DE CARGA */}
       <Card className={`shadow border-4 border-warning w-100 p-0 ${loadClass}`}>
@@ -41,15 +47,20 @@ const PokeTarjeta = (params) => {
       </Card>
 
       {/* TARJETA REAL */}
-      <Card className={`shadow border-4 border-warning w-100 p-0 h-100 ${cardClass}`}>
-        <CardImg 
-          src={imagen || ''} 
-          className='p-2'
-          alt={pokemon.name}
-          style={{ height: '150px', objectFit: 'contain' }} 
-        />
+      <Card 
+        className={`shadow border-4 border-warning w-100 p-0 h-100 ${cardClass} ${fadeClass}`}
+        style={{ transition: 'opacity 0.6s ease-in-out' }}
+      >
+        {/* SOLUCIÓN AL ERROR: Solo renderizamos CardImg si 'imagen' no es null */}
+        {imagen && (
+          <CardImg 
+            src={imagen} 
+            className='p-2'
+            alt={pokemon.name}
+            style={{ height: '150px', objectFit: 'contain' }} 
+          />
+        )}
         
-        {/* d-flex flex-column asegura que el contenido se distribuya bien si el nombre es largo */}
         <CardBody className='text-center d-flex flex-column justify-content-center'>
           <Badge pill color='danger' className='mb-2 mx-auto' style={{width:'fit-content'}}>
             # {pokemon.id}
@@ -62,7 +73,7 @@ const PokeTarjeta = (params) => {
           </div>
         </CardBody>
 
-        <CardFooter className='bg-warning border-0 overflow-hidden'>
+        <CardFooter className='bg-warning p-0 border-0 overflow-hidden'>
           <Link 
             to={`/pokemon/${pokemon.id}`} 
             className='btn btn-warning w-100 rounded-0 d-block fw-bold'
