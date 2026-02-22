@@ -1,0 +1,8 @@
+.fondo {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/img/_background.jpg');
+    background-size: cover;
+    color: white; /* Para que el texto resalte */
+    background-attachment: fixed; /*El truco mágico */
+    background-position: center;
+    background-repeat: no-repeat;
+}
