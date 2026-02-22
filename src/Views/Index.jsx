@@ -19,18 +19,18 @@ const Index = () => {
   const getPokemones = async (o) => {
     // Usando Template Literals para la URL
     const liga = `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${o}`;
-    
 
+    try {   
       const response = await axios.get(liga);
       const respuesta = response.data;
       setPokemones(respuesta.results);
       // Si quieres ver los datos, míralos aquí:
       //console.log("Datos recibidos:", respuesta.results);
-
-
-
-
-
+    } catch (error) {
+      console.log('Error getting Pokemons:', error)
+      // Opcional: Podrías poner un mensaje de alerta para el usuario
+      // alert("No se pudo conectar con el servidor de Pokémon");
+    }
   }
 
   return (
