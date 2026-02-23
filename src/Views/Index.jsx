@@ -3,6 +3,7 @@ import {Container, Row, Col, InputGroupText, Input, InputGroup} from 'reactstrap
 import axios from 'axios'
 import {useState, useEffect} from 'react'
 import PokeTarjeta from '../Components/PokeTarjeta'
+import {PaginationControl} from 'react-bootstrap-pagination-control'
 
 
 
@@ -13,6 +14,8 @@ const Index = () => {
   const [filtro, setFiltro] = useState('');
   const [offset, setOffset] = useState(0);
   const [limit, setLimit] = useState(20);
+  const [total, setTotal] = useState(0);
+
 
   // El useEffect debe observar cambios en 'offset' si quieres paginación
   useEffect(() => {
@@ -29,6 +32,7 @@ const Index = () => {
       const respuesta = response.data;
       setPokemones(respuesta.results);
       setListado(respuesta.results);
+      setTotal(respuesta.count);
 
     } catch (error) {
       console.log('Error getting Pokemons:', error)
@@ -63,9 +67,15 @@ const Index = () => {
     }
   }
 
+  const goPage = async(p) =>{
+    setListado([]);
+    await getPokemones((p==1) ? 0 : ((p-1)*20));
+    setOffset(p);
+  }
+
 
   return (
-    <Container>
+    <Container className='shadow mt-3'>
       <Row>
         <Col>
           <InputGroup className='shadow'>
@@ -77,11 +87,11 @@ const Index = () => {
       <Row className='mt-3'>
         { listado.map( (pok, i) =>(
           <PokeTarjeta  poke={pok} key = {i} />
-
         ) ) }
+        <PaginationControl last={true} limit={limit} total={total} page={offset} changePage={page =>goPage(page)}></PaginationControl>
+
       </Row>
     </Container>
-
   )
 }
 

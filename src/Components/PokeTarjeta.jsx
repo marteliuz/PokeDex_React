@@ -20,7 +20,43 @@ const PokeTarjeta = (params) => {
       const response = await axios.get(liga);
       const respuesta = response.data;
       setPokemon(respuesta);
-      setImagen(respuesta.sprites.other['official-artwork'].front_default);
+      
+      // Official-Artwork
+      // setImagen(respuesta.sprites.other['official-artwork'].front_default);
+      // Anime
+      // setImagen(respuesta.sprites.other.dream_world.front_default);
+      // 3D
+      // setImagen(respuesta.sprites.other.home.front_default);
+    
+      // Versión Shiny del artwork oficial
+      // setImagen(respuesta.sprites.other['official-artwork'].front_shiny);
+      // Versión Shiny del modelo Home
+      // setImagen(respuesta.sprites.other.home.front_shiny);
+
+
+      if (respuesta.sprites.other.home.front_default != null) {
+        // 3D
+        setImagen(respuesta.sprites.other.home.front_default);
+      } else {
+        if (respuesta.sprites.other['official-artwork'].front_default != null) {
+          // Official-Artwork
+          setImagen(respuesta.sprites.other['official-artwork'].front_default);
+        }else{
+          // Anime
+          if (respuesta.sprites.other.dream_world.front_default != null) {
+            setImagen(respuesta.sprites.other.dream_world.front_default);
+          } else {
+            if (respuesta.sprites.front_default != null) {
+              // Pixel Art
+              setImagen(respuesta.sprites.front_default);
+            } else {
+              // loading
+              setImagen('/img/loading_card.gif');
+            }
+          }
+        }
+      }
+
       
       setCardClass('d-block');
       setLoadClass('d-none');
