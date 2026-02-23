@@ -84,13 +84,31 @@ const Index = () => {
           </InputGroup>
         </Col>
       </Row>
+
+
       <Row className='mt-3'>
         { listado.map( (pok, i) =>(
           <PokeTarjeta  poke={pok} key = {i} />
         ) ) }
         <PaginationControl last={true} limit={limit} total={total} page={offset} changePage={page =>goPage(page)}></PaginationControl>
-
       </Row>
+
+
+{/* <Row className='mt-3' xs='1' sm='2' md='3' lg='4' xl='5'>
+  { listado.map( (pok, i) =>(
+    <PokeTarjeta poke={pok} key={i} />
+  ) ) }
+  
+  <Col xs="12" className="mt-4">
+    <PaginationControl 
+      last={true} 
+      limit={limit} 
+      total={total} 
+      page={offset} 
+      changePage={page => goPage(page)} 
+    />
+  </Col>
+</Row> */}
     </Container>
   )
 }
