@@ -42,8 +42,8 @@ const PokeTarjeta = (params) => {
           // Official-Artwork
           setImagen(respuesta.sprites.other['official-artwork'].front_default);
         }else{
-          // Anime
           if (respuesta.sprites.other.dream_world.front_default != null) {
+            // Anime
             setImagen(respuesta.sprites.other.dream_world.front_default);
           } else {
             if (respuesta.sprites.front_default != null) {

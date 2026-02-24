@@ -1,116 +1,92 @@
-import React from 'react'
-import {Container, Row, Col, InputGroupText, Input, InputGroup} from 'reactstrap'
+import React, { useState, useEffect, useMemo } from 'react'
+import { Container, Row, Col, InputGroupText, Input, InputGroup } from 'reactstrap'
 import axios from 'axios'
-import {useState, useEffect} from 'react'
 import PokeTarjeta from '../Components/PokeTarjeta'
-import {PaginationControl} from 'react-bootstrap-pagination-control'
-
-
+import { PaginationControl } from 'react-bootstrap-pagination-control'
 
 const Index = () => {
   const [pokemones, setPokemones] = useState([]);
   const [Allpokemones, setAllPokemones] = useState([]);
   const [listado, setListado] = useState([]);
   const [filtro, setFiltro] = useState('');
-  const [offset, setOffset] = useState(0);
-  const [limit, setLimit] = useState(20);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(20);
   const [total, setTotal] = useState(0);
 
-
-  // El useEffect debe observar cambios en 'offset' si quieres paginación
   useEffect(() => {
-    getPokemones(offset);
-    getAllPokemones();
-  }, [offset]); 
+    getPokemones(page);
+    if (Allpokemones.length === 0) getAllPokemones();
+  }, [page]);
 
-  const getPokemones = async (o) => {
-    // Usando Template Literals para la URL
-    const liga = `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${o}`;
-
-    try {   
-      const response = await axios.get(liga);
-      const respuesta = response.data;
-      setPokemones(respuesta.results);
-      setListado(respuesta.results);
-      setTotal(respuesta.count);
-
-    } catch (error) {
-      console.log('Error getting Pokemons:', error)
-    }
-  }
-
-  const getAllPokemones = async (o) => {
-    const liga = 'https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0';
-
-    try {   
-      const response = await axios.get(liga);
-      const respuesta = response.data;
-      setAllPokemones(respuesta.results);
-    } catch (error) {
-      console.log('Error getting All Pokemons:', error)
-    }
-  }
-
-  const buscar = async(e)=>{
-    if (e.keyCode==13) {
-      if(filtro.trim() != ''){
-        setListado([]);
-        setTimeout(() => {
-          setListado(Allpokemones.filter(p => p.name.includes(filtro)))
-        }, 100);
+  // OPTIMIZACIÓN: Debouncing manual para el filtro
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (filtro.trim() !== '') {
+        // Filtrado optimizado: convertimos a minúsculas una sola vez
+        const query = filtro.toLowerCase();
+        const filtrados = Allpokemones.filter(p => 
+          p.name.toLowerCase().includes(query)
+        );
+        setListado(filtrados);
+      } else {
+        setListado(pokemones);
       }
-    } else if(filtro.trim() == '') {
-      setListado([]);
-      setTimeout(() => {
-        setListado(pokemones)
-      }, 100);
-    }
+    }, 300); // Espera 300ms después de que el usuario deja de escribir
+
+    return () => clearTimeout(handler); // Limpia el timer si el usuario sigue escribiendo
+  }, [filtro, pokemones, Allpokemones]);
+
+  const getPokemones = async (p) => {
+    const apiOffset = (p - 1) * limit;
+    const liga = `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${apiOffset}`;
+    try {   
+      const response = await axios.get(liga);
+      setPokemones(response.data.results);
+      setTotal(response.data.count);
+    } catch (error) { console.log(error); }
   }
 
-  const goPage = async(p) =>{
-    setListado([]);
-    await getPokemones((p==1) ? 0 : ((p-1)*20));
-    setOffset(p);
+  const getAllPokemones = async () => {
+    const liga = 'https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0';
+    try {   
+      const response = await axios.get(liga);
+      setAllPokemones(response.data.results);
+    } catch (error) { console.log(error); }
   }
-
 
   return (
-    <Container className='shadow mt-3'>
-      <Row>
+    <Container className='shadow mt-3 p-3'>
+      <Row className="mb-3">
         <Col>
-          <InputGroup className='shadow'>
+          <InputGroup className='shadow-sm'>
             <InputGroupText><i className='fa-solid fa-search'></i></InputGroupText>
-            <Input value={filtro} onChange={(e) => {setFiltro(e.target.value)}} onKeyUpCapture={buscar} placeholder='Buscar Pokemon'></Input>
+            <Input 
+              value={filtro} 
+              onChange={(e) => setFiltro(e.target.value)} 
+              placeholder='Buscar Pokemon...'
+            />
           </InputGroup>
         </Col>
       </Row>
 
-
-      <Row className='mt-3'>
-        { listado.map( (pok, i) =>(
-          <PokeTarjeta  poke={pok} key = {i} />
-        ) ) }
-        <PaginationControl last={true} limit={limit} total={total} page={offset} changePage={page =>goPage(page)}></PaginationControl>
+      <Row className='mt-3 justify-content-center' xs='2' sm='3' md='4' lg='5'>
+        { listado.map( (pok, i) => (
+            <PokeTarjeta poke={pok} key={pok.name} /> 
+        )) }
       </Row>
 
-
-{/* <Row className='mt-3' xs='1' sm='2' md='3' lg='4' xl='5'>
-  { listado.map( (pok, i) =>(
-    <PokeTarjeta poke={pok} key={i} />
-  ) ) }
-  
-  <Col xs="12" className="mt-4">
-    <PaginationControl 
-      last={true} 
-      limit={limit} 
-      total={total} 
-      page={offset} 
-      changePage={page => goPage(page)} 
-    />
-  </Col>
-</Row> */}
+      <Row className="mt-4">
+        <Col className="d-flex justify-content-center">
+          {filtro === '' && (
+            <PaginationControl 
+              last={true} limit={limit} total={total} page={page} 
+              changePage={p => { setListado([]); setPage(p); }} 
+            />
+          )}
+        </Col>
+      </Row>
     </Container>
   )
 }
 
-export default Index
+export default Index;
