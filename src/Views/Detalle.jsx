@@ -15,6 +15,11 @@ const Detalle = () => {
  const [descripcion, setDescripcion] = useState([]);
  const [imagen, setImagen] = useState([]);
  const [tipos, setTipos] = useState([]);
+
+ const [estadisticas, setEstadisticas] = useState([]); 
+ const [evoluciones, setEvoluciones] = useState([]);
+
+ const [habilidades, setHabilidades] = useState([]);
  const [cardClass, setCardClass] = useState('d-none');
  const [loadClass, setLoadClass] = useState('d-block');
 
@@ -53,6 +58,8 @@ const Detalle = () => {
       }
 
       await getTipos(respuesta.types);
+      await getHabilidades(respuesta.abilities);
+      await getEstadisticas(respuesta.stats);
       await getEspecie(respuesta.species.name);
 
       setCardClass('d-block');
@@ -62,18 +69,50 @@ const Detalle = () => {
   
  }
 
+ const getEstadisticas = async (es) => {
+  let listaEstadisticas = [];
+  
+  es.forEach((e)=>{
+    axios.get(e.stat.url).then(async (response) => {     
+      listaEstadisticas.push(response.data.names[5].name);
+      setEstadisticas(listaEstadisticas);
+    })
+  })
+  
+ }
+
+
+
+
+
+
+
+
+ const getHabilidades = async (hab) => {
+  let listaHabilidades = [];
+  
+  hab.forEach((h)=>{
+    axios.get(h.ability.url).then(async (response) => {     
+      listaHabilidades.push(response.data.names[5].name);
+      setHabilidades(listaHabilidades);
+    })
+  })
+  
+ }
 
  const getTipos = async (tip) => {
   let listaTipos = [];
+  
   tip.forEach((t)=>{
-    axios.get(t.type.url).then(async (response) => {
-      
+    axios.get(t.type.url).then(async (response) => {     
       listaTipos.push(response.data.names[5].name);
       setTipos(listaTipos);
     })
   })
   
  }
+
+
 
  const getEspecie = async(esp)=>{
   const liga = 'https://pokeapi.co/api/v2/pokemon-species/'+esp
@@ -116,9 +155,9 @@ const getDescripcion = async (desc) => {
 
             <Row>
               <Col className='text-end'>
-              <Link to='/' className='btn btn-warning'>
-                <i className='fa-solid fa-home '></i>Inicio
-              </Link>
+                <Link to='/' className='btn btn-warning'>
+                  <i className='fa-solid fa-home '></i>Inicio
+                </Link>
               </Col>
             </Row>
 
@@ -136,6 +175,7 @@ const getDescripcion = async (desc) => {
                 Altura: <b>{(pokemon.height)/10} m </b> 
                 Peso: <b>{(pokemon.weight)/10} kg</b>
               </CardText>
+
               <CardText className='fs-5 text-start'>
                 Tipo: 
                 {tipos.map((tip,i) => (
@@ -144,11 +184,33 @@ const getDescripcion = async (desc) => {
                   </Badge>
                 ))}
               </CardText>
+
+              <CardText className='fs-5 text-start'>
+                Habilidades: 
+                {habilidades.map((hab,i) => (
+                  <Badge pill className='me-1' color='dark' key={i}>
+                    {hab}
+                  </Badge>
+                ))}
+              </CardText>
+
               <CardText className='fs-5 text-start text-capitalize'>
                 Habitat: <b>{habitat}</b>
               </CardText>
+
               </Col>
-              <Col md='6'></Col>
+              <Col md='6' className='text-center'>
+                <img src={imagen} alt={pokemon.name} className='img-fluid animate__animated animate__zoomIn' style={{ maxHeight: '200px' }} />
+              </Col>
+
+              <Col md='12 mt-3' >
+                <CardText className='fs-4 text-center'><b>Estadísticas</b></CardText>
+              </Col>
+              <Col md='12 mt-3' >
+                <CardText className='fs-4 text-center'><b>Evoluciones</b></CardText>
+              </Col>
+
+
             </Row>
           </CardBody>
         </Card>     
