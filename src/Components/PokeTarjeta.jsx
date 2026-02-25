@@ -111,7 +111,7 @@ const PokeTarjeta = (params) => {
 
         <CardFooter className='bg-warning p-0 border-0 overflow-hidden'>
           <Link 
-            to={`/pokemon/${pokemon.id}`} 
+            to={`/pokemon/${pokemon.name}`} 
             className='btn btn-warning w-100 rounded-0 d-block fw-bold'
             style={{ 
               border: 'none', 
