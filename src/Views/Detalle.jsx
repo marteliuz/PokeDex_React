@@ -51,11 +51,26 @@ const Detalle = () => {
           }
         }
       }
+
+      await getTipos(respuesta.types);
+      await getEspecie(respuesta.species.name);
+
       setCardClass('d-block');
       setLoadClass('d-none');
 
-      await getEspecie(respuesta.species.name);
+  })
+  
+ }
 
+
+ const getTipos = async (tip) => {
+  let listaTipos = [];
+  tip.forEach((t)=>{
+    axios.get(t.type.url).then(async (response) => {
+      
+      listaTipos.push(response.data.names[5].name);
+      setTipos(listaTipos);
+    })
   })
   
  }
@@ -83,6 +98,9 @@ const getDescripcion = async (desc) => {
   desc.forEach( (d)=>{
     if (d.language.name == 'es') {
       texto  = d.flavor_text;
+    }
+    if (texto == '' && desc.length > 0) {
+      texto = desc[0].flavor_text;
     }
   })
   setDescripcion(texto);
@@ -118,7 +136,14 @@ const getDescripcion = async (desc) => {
                 Altura: <b>{(pokemon.height)/10} m </b> 
                 Peso: <b>{(pokemon.weight)/10} kg</b>
               </CardText>
-              <CardText className='fs-5 text-start'>Tipo: </CardText>
+              <CardText className='fs-5 text-start'>
+                Tipo: 
+                {tipos.map((tip,i) => (
+                  <Badge pill className='me-1' color='danger' key={i}>
+                    {tip}
+                  </Badge>
+                ))}
+              </CardText>
               <CardText className='fs-5 text-start text-capitalize'>
                 Habitat: <b>{habitat}</b>
               </CardText>
