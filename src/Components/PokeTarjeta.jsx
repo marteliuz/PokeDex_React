@@ -1,131 +1,62 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { Col, Card, CardBody, CardFooter, CardImg, Badge } from 'reactstrap'
+import { Card, CardBody, CardFooter, CardImg, Badge } from 'reactstrap'
 import { Link } from 'react-router-dom'
 
 const PokeTarjeta = (params) => {
   const [pokemon, setPokemon] = useState({});
-  const [imagen, setImagen] = useState(null); // Mantenemos null aquí
+  const [imagen, setImagen] = useState(null);
   const [cardClass, setCardClass] = useState('d-none');
   const [loadClass, setLoadClass] = useState('d-block');
   const [fadeClass, setFadeClass] = useState('opacity-0');
 
   useEffect(() => {
-    getPokemon()
-  }, [])
+    getPokemon();
+  }, [params.poke.url]); // Se recarga si cambia la URL
 
   const getPokemon = async () => {
-    const liga = params.poke.url;
+    setLoadClass('d-block');
+    setCardClass('d-none');
     try {
-      const response = await axios.get(liga);
-      const respuesta = response.data;
-      setPokemon(respuesta);
+      const response = await axios.get(params.poke.url);
+      const res = response.data;
+      setPokemon(res);
       
-      // Official-Artwork
-      // setImagen(respuesta.sprites.other['official-artwork'].front_default);
-      // Anime
-      // setImagen(respuesta.sprites.other.dream_world.front_default);
-      // 3D
-      // setImagen(respuesta.sprites.other.home.front_default);
-    
-      // Versión Shiny del artwork oficial
-      // setImagen(respuesta.sprites.other['official-artwork'].front_shiny);
-      // Versión Shiny del modelo Home
-      // setImagen(respuesta.sprites.other.home.front_shiny);
-
-
-      if (respuesta.sprites.other.home.front_default != null) {
-        // 3D
-        setImagen(respuesta.sprites.other.home.front_default);
-      } else {
-        if (respuesta.sprites.other['official-artwork'].front_default != null) {
-          // Official-Artwork
-          setImagen(respuesta.sprites.other['official-artwork'].front_default);
-        }else{
-          if (respuesta.sprites.other.dream_world.front_default != null) {
-            // Anime
-            setImagen(respuesta.sprites.other.dream_world.front_default);
-          } else {
-            if (respuesta.sprites.front_default != null) {
-              // Pixel Art
-              setImagen(respuesta.sprites.front_default);
-            } else {
-              // loading
-              setImagen('/img/loading_card.gif');
-            }
-          }
-        }
-      }
-
+      const img = res.sprites.other?.home?.front_default || 
+                  res.sprites.other?.['official-artwork']?.front_default || 
+                  res.sprites.front_default;
       
+      setImagen(img);
       setCardClass('d-block');
       setLoadClass('d-none');
-      
-      setTimeout(() => {
-        setFadeClass('opacity-100');
-      }, 50);
-
+      setTimeout(() => setFadeClass('opacity-100'), 50);
     } catch (error) {
-      setLoadClass('d-none');
+      console.error(error);
     }
   }
 
   return (
-    <Col sm='4' lg='3' className='mb-4 d-flex align-items-stretch'>
-      
-      {/* TARJETA DE CARGA */}
-      <Card className={`shadow border-4 border-warning w-100 p-0 ${loadClass}`}>
-        <CardImg 
-          src='/img/loading_card.gif' 
-          className='p-3'
-          style={{ height: '276px', objectFit: 'contain' }} 
-        />
+    <div className='w-100 mb-4'>
+      <Card className={`shadow border-4 border-warning ${loadClass}`}>
+        <div className='d-flex align-items-center justify-content-center' style={{ height: '200px' }}>
+          <img src='/img/loading_card.gif' width="50" alt="loading" />
+        </div>
       </Card>
 
-      {/* TARJETA REAL */}
-      <Card 
-        className={`shadow border-4 border-warning w-100 p-0 h-100 ${cardClass} ${fadeClass}`}
-        style={{ transition: 'opacity 0.6s ease-in-out' }}
-      >
-        {/* SOLUCIÓN AL ERROR: Solo renderizamos CardImg si 'imagen' no es null */}
-        {imagen && (
-          <CardImg 
-            src={imagen} 
-            className='p-2'
-            alt={pokemon.name}
-            style={{ height: '150px', objectFit: 'contain' }} 
-          />
-        )}
-        
-        <CardBody className='text-center d-flex flex-column justify-content-center'>
-          <Badge pill color='danger' className='mb-2 mx-auto' style={{width:'fit-content'}}>
-            # {pokemon.id}
-          </Badge>
-          <div 
-            className='fw-bold text-capitalize' 
-            style={{ fontSize: 'clamp(1rem, 1.5vw, 1.2rem)', lineHeight: '1.2' }}
-          >
-            {pokemon.name}
-          </div>
+      <Card className={`shadow border-4 border-warning h-100 ${cardClass} ${fadeClass}`} style={{ transition: 'opacity 0.5s' }}>
+        {imagen && <CardImg src={imagen} style={{ height: '150px', objectFit: 'contain' }} className='p-2' />}
+        <CardBody className='text-center p-2'>
+          <Badge pill color='danger'># {pokemon.id}</Badge>
+          <div className='fw-bold text-capitalize mt-2'>{pokemon.name}</div>
         </CardBody>
-
-        <CardFooter className='bg-warning p-0 border-0 overflow-hidden'>
-          <Link 
-            to={`/pokemon/${pokemon.name}`} 
-            className='btn btn-warning w-100 rounded-0 d-block fw-bold'
-            style={{ 
-              border: 'none', 
-              backgroundColor: 'transparent', 
-              padding: '12px 0',
-              color: 'black'
-            }}
-          >
-            <i className='fa-solid fa-arrow-up-right-from-square'></i> Detalle
+        <CardFooter className='bg-warning p-0 border-0'>
+          <Link to={`/pokemon/${pokemon.name}`} className='btn btn-warning w-100 rounded-0 fw-bold'>
+            Detalle
           </Link>
         </CardFooter>
       </Card>
-    </Col>
+    </div>
   )
 }
 
-export default PokeTarjeta
+export default PokeTarjeta;
